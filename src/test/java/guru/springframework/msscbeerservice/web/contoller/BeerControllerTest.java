@@ -1,19 +1,21 @@
 package guru.springframework.msscbeerservice.web.contoller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import guru.springframework.msscbeerservice.bootstrap.BeerLoader;
 import guru.springframework.msscbeerservice.web.model.BeerDto;
+import guru.springframework.msscbeerservice.web.model.BeerStyleEnum;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.math.BigDecimal;
 import java.util.UUID;
 
-@SpringBootTest
+
 @WebMvcTest(BeerController.class)
 class BeerControllerTest {
 
@@ -31,9 +33,7 @@ class BeerControllerTest {
 
     @Test
     void saveNewBeer() throws Exception {
-        BeerDto beerDto = BeerDto.builder()
-                .id(UUID.randomUUID())
-                .build();
+        BeerDto beerDto = getValidBeerDto();
 
         String beerToJson = objectMapper.writeValueAsString(beerDto);
 
@@ -45,7 +45,7 @@ class BeerControllerTest {
 
     @Test
     void updateBeerById() throws Exception {
-        BeerDto beerDto = BeerDto.builder().id(UUID.randomUUID()).build();
+        BeerDto beerDto = getValidBeerDto();
 
         String beerToJson = objectMapper.writeValueAsString(beerDto);
 
@@ -53,5 +53,14 @@ class BeerControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(beerToJson))
                         .andExpect(status().isNoContent());
+    }
+
+    BeerDto getValidBeerDto(){
+        return BeerDto.builder()
+                .beerName("My Beer")
+                .beerStyle(BeerStyleEnum.ALE)
+                .price(new BigDecimal("2.99"))
+                .upc(Long.valueOf(BeerLoader.BEER_1_UPC))
+                .build();
     }
 }
