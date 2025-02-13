@@ -39,12 +39,11 @@ public class BeerDto {
     @NotNull
     private BeerStyleEnum beerStyle;
 
-    @Positive
+    //Universal Product Code
     @NotNull
-    private Long upc;
+    private String upc;
 
     @JsonFormat(shape = JsonFormat.Shape.STRING)
-    @Positive
     @NotNull
     private BigDecimal price;
 
