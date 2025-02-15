@@ -16,7 +16,7 @@ import java.util.UUID;
 
 @Slf4j
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/beer")
+@RequestMapping("/api/v1/")
 @RestController
 public class BeerController {
 
@@ -24,13 +24,17 @@ public class BeerController {
     private static final Integer PAGE_SIZE = 25;
     private final BeerService beerService;
 
-    @GetMapping(produces = {"application/json"})
+    @GetMapping(path = "beer", produces = {"application/json"})
     public ResponseEntity<BeerPagedList> listBeers(@RequestParam(value = "pageNumber", required = false) Integer pageNumber,
                                                    @RequestParam(value = "pageSize", required = false) Integer pageSize,
                                                    @RequestParam(value = "beerName", required = false) String beerName,
-                                                   @RequestParam(value = "beerStyle", required = false) BeerStyleEnum beerStyle
-                                                   ){
+                                                   @RequestParam(value = "beerStyle", required = false) BeerStyleEnum beerStyle,
+                                                   @RequestParam(value = "showInventoryOnHand", required = false) Boolean showInventoryOnHand){
         log.info("list beers");
+        if(showInventoryOnHand == null){
+            showInventoryOnHand = false;
+        }
+
         if(pageNumber == null || pageNumber < 0){
             pageNumber = PAGE_NUMBER;
         }
@@ -38,22 +42,32 @@ public class BeerController {
             pageSize = PAGE_SIZE;
         }
 
-        return new ResponseEntity<>(beerService.listBeers(beerName, beerStyle, PageRequest.of(pageNumber, pageSize)), HttpStatus.OK) ;
+        return new ResponseEntity<>(beerService.listBeers(beerName, beerStyle, PageRequest.of(pageNumber, pageSize), showInventoryOnHand), HttpStatus.OK) ;
     }
 
-    @GetMapping("/{beerId}")
-    public ResponseEntity<BeerDto> getBeerById(@PathVariable("beerId") UUID beerId) {
+    @GetMapping("/beer/{beerId}")
+    public ResponseEntity<BeerDto> getBeerById(@PathVariable("beerId") UUID beerId,
+                                               @RequestParam(value = "showInventoryOnHand", required = false) Boolean showInventoryOnHand) {
         log.info("getBeerById");
-        return new ResponseEntity<>(beerService.getById(beerId), HttpStatus.OK);
+        if(showInventoryOnHand == null){
+            showInventoryOnHand = false;
+        }
+        return new ResponseEntity<>(beerService.getById(beerId, showInventoryOnHand), HttpStatus.OK);
+    }
+    @GetMapping("beerUpc/{upc}")
+    public ResponseEntity<BeerDto> getBeerByUpc(@PathVariable("upc") String  upc) {
+        log.info("getBeerByUpc");
+
+        return new ResponseEntity<>(beerService.getByUpc(upc), HttpStatus.OK);
     }
 
-    @PostMapping
+    @PostMapping(path = "beer/")
     public ResponseEntity<BeerDto> saveNewBeer(@Valid @RequestBody BeerDto beerDto) {
         log.info("saveNewBeer");
         return new ResponseEntity<>(beerService.saveNewBeer(beerDto), HttpStatus.CREATED);
     }
 
-    @PutMapping("/{beerId}")
+    @PutMapping("beer/{beerId}")
     public ResponseEntity<BeerDto> updateBeerById(@PathVariable("beerId") UUID beerId, @Valid @RequestBody BeerDto beerDto) {
         log.info("updateBeerById");
         return new ResponseEntity<>(beerService.updateBeerById(beerId, beerDto), HttpStatus.NO_CONTENT);
